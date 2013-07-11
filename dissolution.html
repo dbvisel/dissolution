@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>the dissolution of my cd collection, a map</title>
+    <style type="text/css" media="all"><!--
+      html, body, #map-canvas {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      p {
+        margin:0;
+      }
+      .key {
+        position:fixed;
+        margin-left:auto;
+        margin-right:auto;
+        left:20px;
+        bottom:20px;
+        background:white;
+        background:rgba(255,255,255,0.75);
+        max-width:38.2%;
+        z-index:1;
+        padding:5px 10px 5px 10px;
+        border-radius:10px;
+        font-family: "Helvetica Neue", "Helvetica", "Arial";
+        font-weight:normal;
+        line-height:1.5em;
+      }
+      a {
+        text-decoration:none;
+        color:red;
+        font-weight:bold;
+      }
+
+      @media all and (max-width: 800px) {
+        .key {
+          max-height:25%;
+          font-size:50%;
+          right:10px;
+          left:auto;
+        }        
+      }        
+    --></style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+    <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script language="javascript"><!--
+
+function decimalToHex(d, padding) {
+    var hex = Number(Math.floor(d)).toString(16);
+    padding = typeof (padding) === "undefined" || padding === null ? padding = 2 : padding;
+    while (hex.length < padding) {
+        hex = "0" + hex;
+    }
+    return hex;
+}
+
+function hsv2rgb(h, s, v) {
+    h = (h % 1 + 1) % 1; // wrap hue
+    var i = Math.floor(h * 6),
+        f = h * 6 - i,
+        p = v * (1 - s),
+        q = v * (1 - s * f),
+        t = v * (1 - s * (1 - f));
+    switch (i) {
+        case 0: return [v, t, p];
+        case 1: return [q, v, p];
+        case 2: return [p, v, t];
+        case 3: return [p, q, v];
+        case 4: return [t, p, v];
+        case 5: return [v, p, q];
+    }
+}
+
+function initialize() {
+  var myhouse = new google.maps.LatLng(40.752792,-73.880128);
+  var mapOptions = {
+    zoom: 3,
+    center: myhouse,
+    mapTypeId: google.maps.MapTypeId.TERRAIN
+  };
+
+  var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+  $.getJSON('dissolution.json', function(data) {
+    for(i in data.cds) {
+      var currentpoint = data.cds[i];
+      var endpoint = new google.maps.LatLng(currentpoint.lat,currentpoint.lng);
+      var line = [myhouse, endpoint];
+  /*  var currentcolor =  hsv2rgb((i/points.length), 1, 1);
+      var output = "#" + decimalToHex((currentcolor[0]*255),2) +  decimalToHex((currentcolor[1]*255),2) + decimalToHex((currentcolor[2]*255),2); */
+
+      var flightPath = new google.maps.Polyline({
+        path: line,
+  //    strokeColor: output,  // for rainbows
+        strokeColor: '#CC0000',
+        strokeOpacity: 0.5,
+        strokeWeight: 2, 
+        strokeWeight: 1 * currentpoint.number,
+        geodesic: true
+      });
+
+  /*    var cdcircle = new google.maps.Circle({
+        strokeColor: '#FF0000',
+        strokeOpacity: 0,
+        strokeWeight: 2,
+  //    fillColor: output,
+        fillColor: '#FF0000',
+        fillOpacity: 0.5,
+        map: map,
+        center: endpoint,
+        radius: 10000 * currentpoint.number 
+      }); */
+
+      flightPath.setMap(map);
+    }
+  });
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    --></script>
+  </head>
+
+  <body>
+    <div id="map-canvas"></div>
+    <div class="key">
+      <p>This is up to date as of July 11, 2013. Thicker lines mean more CDs sent to that location. CDs are for sale on <a href="http://www.discogs.com/seller/visel">Discogs</a>.</p>
+    </div>
+  </body>
+</html>
